@@ -1,0 +1,21 @@
+<html>
+  <body>
+    <div>
+      <p>
+        <?=message?>
+      </p>
+    </div>
+    <div>
+      <a href="#" onclick="openAndShut()"> 
+        <?=linkText?> 
+      </a>
+    </div>
+
+    <script>
+      function openAndShut() {
+        window.open(href="<?=url?>", target="_blank");
+        google.script.host.close();
+      };
+    </script>
+  </body>
+</html>

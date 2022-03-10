@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+
+
+</head>
+
+<body>
+  <div id="dialog-text">
+    <?=message?>
+  </div>
+  <div id="dialog-subtext">
+  </div>
+  <br /><br />
+  <div id="error">
+  </div>
+  <br /><br />
+  <div id="loading-sign-container" class="d-flex align-items-center justify-content-center"
+    style="width: 100%; height: 100%; z-index: 9999">
+    <div id="loading-sign-spinner" class="spinner-border " role="status"></div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    var initArgs = JSON.parse("<?=initArgs?>")
+    $(document).ready(function ()
+    {
+      runBatch(initArgs)
+    })
+
+    // Run the function.  If successful, check whether we need to run another batch.
+    function runBatch(args)
+    {
+      // Function should return null if we're done.
+      if (args === null)
+      {
+        closeDialog()
+      } else
+      {
+        console.log("Running batch with args %s ", JSON.stringify(args))
+        $('#dialog-subtext').html('Importing data for ' + args.currentSchool + '.<br/>Processed ' + args.continuationToken + ' school(s) out of ' + args.schoolCount + '.')
+        if (args.lastError)
+        {
+          $('#error').text(args.lastError)
+        }
+        else
+        {
+          $('#error').text('')
+        }
+        // Otherwise it returns the next start row
+        google.script.run
+          .withSuccessHandler(runBatch)
+          .withFailureHandler(onFailure)
+        ['<?=functionName?>'](args);
+      }
+    }
+
+    function onSuccess()
+    {
+      console.log("Batches were successful")
+      if ('<?=successMessage?>' === 'undefined')
+      {
+        closeDialog();
+      } else
+      {
+        showOkButton();
+      }
+    }
+
+    function onFailure(err)
+    {
+      console.error("Server-side script failed: %s", err.message)
+      var dialogText = $('#dialog-text')
+      dialogText.empty();
+      if ('<?=failureMessage?>' !== 'undefined')
+      {
+        dialogText.append($('<p>').text('<?=failureMessage?>'))
+      }
+      dialogText.append($('<p>').text(err.message))
+      $('#dialog-subtext').empty()
+      showOkButton();
+    }
+
+    function closeDialog(msg)
+    {
+      if (msg) console.log(msg);
+      google.script.host.close()
+    }
+
+    function showOkButton()
+    {
+      $('#loading-sign-container').html(
+        '<button id="close-button" type="button" class="btn btn-primary" onclick="closeDialog()">OK</button>'
+      )
+    }
+
+  </script>
+</body>
+
+</html>
