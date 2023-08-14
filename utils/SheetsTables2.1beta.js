@@ -195,10 +195,10 @@ SheetsTable.prototype.getRowsHashedBy = function (key, hashOptions, getRowsOptio
 var DASHBOARD_TABLE = new SheetsTable({
   name: 'Dashboard',
   spreadsheetId: 'active',
-  sheetName: 'GRE4T STARR Dashboard',
+  sheetName: 'GRE4T STEARR Dashboard',
   primaryKey: ['districtName', 'schoolName'],
   defaultOptions: {
-    headersRowIndex: 2,
+    headersRowIndex: 3,
     headersCase: 'camel',
   }
 })

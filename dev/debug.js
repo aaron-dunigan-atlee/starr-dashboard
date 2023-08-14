@@ -1,6 +1,6 @@
 var DEV_EMAIL = ['aaron', 'dunigan', 'atlee@gmail', 'com'].join('.')
 var LOG_SHEET_NAME = 'Log'
-var APP_NAME = 'GRE4T STARR Dashboard'
+var APP_NAME = 'GRE4T STEARR Dashboard'
 var NOTIFICATION_EMAIL = ['aaron', 'dunigan', 'atlee@gmail', 'com'].join('.')
 
 function getDebug()

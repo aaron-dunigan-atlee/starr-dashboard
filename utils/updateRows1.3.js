@@ -2,6 +2,7 @@
  * updateRows
  * Version 1.3: added .upsert option 
  *              support for compound primary key (passed as array)
+ *              fixed bug in .onlyPresentColumns
  */
 /**
  * Update rows data for existing rows, with a lock to avoid collisions or changes to the sheet while we are processing.
@@ -84,7 +85,7 @@ function updateRows(sheet, rows, setOptions, primaryKey, passedLock, updateOptio
         {
           for (var prop in rowToUpdate)
           {
-            if (!row[prop])
+            if (!row.hasOwnProperty(prop))
             {
               row[prop] = rowToUpdate[prop]
             }
@@ -131,7 +132,7 @@ function updateRows(sheet, rows, setOptions, primaryKey, passedLock, updateOptio
         {
           for (var prop in rowToUpdate)
           {
-            if (!row[prop])
+            if (!row.hasOwnProperty(prop))
             {
               row[prop] = rowToUpdate[prop]
             }
