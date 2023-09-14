@@ -97,7 +97,7 @@ function processSchool(school)
   if (schoolData.length > 0)
   {
     var participant;
-    schoolData.forEach(row =>
+    schoolData.forEach((row, rowIndex) =>
     {
       if (row[idHeader])
       {
@@ -106,7 +106,21 @@ function processSchool(school)
       }
       else
       {
-        participant.push(row);
+        try
+        {
+          participant.push(row);
+        }
+        catch (e)
+        {
+          console.error("This is probably a poorly formatted spreadsheet. Here's what we know:\n%s",
+            JSON.stringify({
+              idHeader,
+              row,
+              participants,
+              rowIndex
+            }, null, 2))
+          throw e;
+        }
       }
     })
     participants.push(participant)
