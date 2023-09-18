@@ -22,7 +22,7 @@ function updateDashboard()
 }
 
 /**
- * This is called by the spinner modal to initiate a batch of updateVendorShipping
+ * This is called by the spinner modal to import data from one school
  */
 function importSchool(continuationArgs)
 {
