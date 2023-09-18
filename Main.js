@@ -8,7 +8,7 @@ function updateDashboard()
     throw new Error("There are no schools listed in the School Directory tab");
   }
   showSpinnerModal(
-    "Please wait while we compile STARR data for each school.",
+    "Please wait while we compile STEARR data for each school.",
     'importSchool',
     '✔️ Dashboard updated',
     '⚠️ Something went wrong. Data may not have been updated.',
