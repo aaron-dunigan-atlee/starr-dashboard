@@ -196,14 +196,14 @@ var DASHBOARD_TABLE = new SheetsTable({
   name: 'Dashboard',
   spreadsheetId: 'active',
   sheetName: 'GRE4T STEARR Dashboard',
-  primaryKey: ['districtName', 'schoolName'],
+  primaryKey: ['districtName', 'schoolName', 'coachName'],
   defaultOptions: {
     headersRowIndex: 3,
     headersCase: 'camel',
   }
 })
 
-var DIRECTORY_TABLE = new SheetsTable({
+var SCHOOLS_DIRECTORY_TABLE = new SheetsTable({
   name: 'Directory',
   spreadsheetId: 'active',
   sheetName: 'School Directory',
@@ -214,3 +214,20 @@ var DIRECTORY_TABLE = new SheetsTable({
     get: 'hyperlinks'
   }
 })
+
+var COACHES_DIRECTORY_TABLE = new SheetsTable({
+  name: 'Coaches',
+  spreadsheetId: 'active',
+  sheetName: 'Coaches Directory',
+  primaryKey: 'description',
+  defaultOptions: {
+    headersRowIndex: 1,
+    headersCase: 'camel',
+    get: 'hyperlinks'
+  }
+})
+
+// Once in a coach spreadsheet, the data starts on row 5
+// The SheetsTable for each coach spreadsheet will be created dynamically
+// when looping through each coach spreadsheet
+const COACH_HEADERS_ROW_INDEX = 4;

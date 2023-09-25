@@ -27,25 +27,22 @@ var GETROWSDATA_DEFAULT_HEADER_CASE = 'camel'
  * @param {SpreadsheetApp.range} range  Optional, defaults to all the cells except those in the first row or all the cells below headersRowIndex (if defined).
  * @param {*} parameters Any of the following:
  *      headersRowIndex: {integer}  The row number where column names are stored.
- *      getDisplayValues: {boolean} If true, gets the display values as strings         
+ *      getDisplayValues: {boolean} If true, gets the display values as strings 
+ *      trim: {boolean} Default false, if true, trim all string values.
  */
-function getRowsData(sheet, range, parameters)
-{
+function getRowsData(sheet, range, parameters) {
   parameters = parameters || {}
   if (sheet.getLastRow() < 2) return [];
   var headersIndex = parameters.headersRowIndex || (range ? range.getRowIndex() - 1 : 1);
 
   var dataRange, base, keys;
-  if (!range && (parameters.startHeader || parameters.endHeader))
-  {
+  if (!range && (parameters.startHeader || parameters.endHeader)) {
     range = getBodyRange(sheet, headersIndex, parameters.startHeader, parameters.endHeader);
   }
   var numRows = range ? range.getHeight() : parameters.getBlanks ? sheet.getMaxRows() - headersIndex : sheet.getLastRow() - headersIndex;
-  if (range)
-  {
+  if (range) {
     dataRange = range;
-  } else
-  {
+  } else {
     if (numRows <= 0) return [];
     dataRange = sheet.getRange(headersIndex + 1, 1, numRows, sheet.getLastColumn());
   }
@@ -59,22 +56,16 @@ function getRowsData(sheet, range, parameters)
 
   // Determine type of values to get
   var values
-  if (parameters.useChunks)
-  {
+  if (parameters.useChunks) {
     values = getValuesChunked(sheet, dataRange, parameters)
-  } else if (parameters.getDisplayValues || parameters.displayValues || parameters.get === 'displayValues')
-  {
+  } else if (parameters.getDisplayValues || parameters.displayValues || parameters.get === 'displayValues') {
     values = dataRange.getDisplayValues()
-  } else if (parameters.getRichTextValues || parameters.get === 'richTextValues' || parameters.getHyperlinks || parameters.get === 'hyperlinks')
-  {
+  } else if (parameters.getRichTextValues || parameters.get === 'richTextValues' || parameters.getHyperlinks || parameters.get === 'hyperlinks') {
     values = dataRange.getRichTextValues()
     // If we're getting hyperlinks, convert rich text to hyperlink or text
-    if (parameters.getHyperlinks || parameters.get === 'hyperlinks')
-    {
-      for (i = 0; i < values.length; i++)
-      {
-        for (j = 0; j < values[0].length; j++)
-        {
+    if (parameters.getHyperlinks || parameters.get === 'hyperlinks') {
+      for (i = 0; i < values.length; i++) {
+        for (j = 0; j < values[0].length; j++) {
           values[i][j] = values[i][j].getLinkUrl() || values[i][j].getText()
         }
       }
@@ -86,8 +77,7 @@ function getRowsData(sheet, range, parameters)
 
   // Get formulas if instructed
   var formulas = null;
-  if (parameters.getFormulas || parameters.get === 'formulas')
-  {
+  if (parameters.getFormulas || parameters.get === 'formulas') {
     formulas = dataRange.getFormulas()
   }
 
@@ -104,21 +94,17 @@ function getRowsData(sheet, range, parameters)
 }
 
 
-function snakeCaseHeaders(headers)
-{
+function snakeCaseHeaders(headers) {
   var keys = [];
-  for (var i = 0; i < headers.length; ++i)
-  {
+  for (var i = 0; i < headers.length; ++i) {
     keys.push(headers[i].replace(/\W/g, '_').toLowerCase());
   }
   return keys;
 }
 
-function lowerCaseHeaders(headers)
-{
+function lowerCaseHeaders(headers) {
   var keys = [];
-  for (var i = 0; i < headers.length; ++i)
-  {
+  for (var i = 0; i < headers.length; ++i) {
     keys.push(headers[i].replace(/\W/g, '').toLowerCase());
   }
   return keys;
@@ -146,15 +132,13 @@ function lowerCaseHeaders(headers)
 //
 //  Returns a range object where the data was written
 
-function setRowsData(sheet, objects, parameters)
-{
+function setRowsData(sheet, objects, parameters) {
   parameters = parameters || {};
   if (parameters.debug) console.log("setRowsData DEBUG mode: we will perform and log all operations, but we won't update the target sheet")
 
   // Validate objects parameter
   if (!(objects instanceof Array) && objects instanceof Object) objects = [objects]; //in case only one object is passed instead of an array with one element as intended
-  if (objects.length === 0)
-  {
+  if (objects.length === 0) {
     if (parameters.log !== false) console.warn('setRowsData: Empty data array passed')
     return EmptyRange
   }
@@ -166,11 +150,9 @@ function setRowsData(sheet, objects, parameters)
   if (parameters.log !== false) console.log('Headers range is ' + headersRange.getA1Notation());
 
   var firstRowIndex;
-  if (parameters.firstRowIndex)
-  {
+  if (parameters.firstRowIndex) {
     firstRowIndex = parameters.firstRowIndex;
-  } else
-  {
+  } else {
     if (writeMethod === 'append' || writeMethod === 'appendRow') firstRowIndex = sheet.getLastRow() + 1; // In case of appendRow, the firstRowIndex and destinationRange will be ignored, but if useSheetsAPI is true, we use it.
     if (writeMethod === 'overwrite' || writeMethod === 'clear' || writeMethod === 'delete') firstRowIndex = headersRange.getRowIndex() + 1;
     if (parameters.firstRowIndex) firstRowIndex = parameters.firstRowIndex;
@@ -185,11 +167,9 @@ function setRowsData(sheet, objects, parameters)
   if (parameters.headersCase === 'none') keys = headers;
 
   var formulaKeys = {};
-  if (parameters.preserveArrayFormulas)
-  {
+  if (parameters.preserveArrayFormulas) {
     var headerFormulas = sheet.getRange(1, headersRange.getColumn(), 1, headersRange.getLastColumn()).getFormulas().shift();
-    for (j = 0; j < keys.length; ++j)
-    {
+    for (j = 0; j < keys.length; ++j) {
       if (headerFormulas[j]) formulaKeys[keys[j]] = true;
     }
   }
@@ -198,43 +178,33 @@ function setRowsData(sheet, objects, parameters)
   var formulas = parameters.preserveFormulas ? destinationRange.getFormulas() : null;
 
   var data = [];
-  for (var i = 0; i < objects.length; ++i)
-  {
+  for (var i = 0; i < objects.length; ++i) {
     var values = []
-    for (j = 0; j < keys.length; ++j)
-    {
+    for (j = 0; j < keys.length; ++j) {
       var header = keys[j];
-      if (header.length > 0)
-      {
-        if (parameters.preserveArrayFormulas && formulaKeys[header])
-        {
+      if (header.length > 0) {
+        if (parameters.preserveArrayFormulas && formulaKeys[header]) {
           values.push(null);
-        } else if (parameters.preserveFormulas && formulas[i][j])
-        {
+        } else if (parameters.preserveFormulas && formulas[i][j]) {
           values.push(formulas[i][j])
-        } else if (parameters.omitZeros || parameters.omitZeroes)
-        {
+        } else if (parameters.omitZeros || parameters.omitZeroes) {
           values.push(objects[i][header] ? objects[i][header] : "");
-        } else
-        {
+        } else {
           values.push(typeof objects[i][header] !== 'undefined' ? objects[i][header] : ""); //what about null
         }
-      } else
-      { //else column header is blank
+      } else { //else column header is blank
         values.push("")
       }
     }
     data.push(values);
   }
 
-  if (writeMethod === 'clear' && sheet.getLastRow() - destinationRange.getLastRow() > 0)
-  {
+  if (writeMethod === 'clear' && sheet.getLastRow() - destinationRange.getLastRow() > 0) {
     var clearRange = sheet.getRange(destinationRange.getLastRow() + 1, destinationRange.getColumn(), sheet.getLastRow() - destinationRange.getLastRow(), destinationRange.getWidth());
     console.log('Cleared range: ' + clearRange.getA1Notation());
     if (!parameters.debug) clearRange.clearContent();
   }
-  if (writeMethod === 'delete' && sheet.getMaxRows() - destinationRange.getLastRow() > 0)
-  {
+  if (writeMethod === 'delete' && sheet.getMaxRows() - destinationRange.getLastRow() > 0) {
     var firstRowToDelete = destinationRange.getLastRow() + 1;
     var numRowsToDelete = sheet.getMaxRows() - destinationRange.getLastRow();
     if (parameters.log !== false) console.log('Deleted ' + firstRowToDelete + ' rows starting on row ' + numRowsToDelete + '.');
@@ -242,19 +212,15 @@ function setRowsData(sheet, objects, parameters)
   }
   // If needed, insert rows in sheet.  API doesn't always do this automatically.
   var rowsNeeded = destinationRange.getLastRow() - sheet.getLastRow();
-  if (parameters.useSheetsAPI && rowsNeeded > 0)
-  {
+  if (parameters.useSheetsAPI && rowsNeeded > 0) {
     if (!parameters.debug) appendRowsToSheet(sheet.getParent().getId(), sheet.getSheetId(), rowsNeeded);
   }
   // Write the data
-  if (parameters.useChunks)
-  {
+  if (parameters.useChunks) {
     setValuesChunked(sheet, data, destinationRange, parameters)
-  } else
-  {
+  } else {
     var rangeString = "'" + sheet.getName() + "'!" + destinationRange.getA1Notation();
-    if (parameters.useSheetsAPI)
-    {
+    if (parameters.useSheetsAPI) {
       var options = {
         "valueInputOption": "USER_ENTERED",
         "responseValueRenderOption": "FORMATTED_VALUE"
@@ -265,28 +231,22 @@ function setRowsData(sheet, objects, parameters)
         "values": data
       }
       if (!parameters.debug) Sheets.Spreadsheets.Values.update(valueRange, sheet.getParent().getId(), rangeString, options)
-    } else
-    {
-      if (!parameters.debug)
-      {
-        if (parameters.writeMethod === 'appendRow')
-        {
+    } else {
+      if (!parameters.debug) {
+        if (parameters.writeMethod === 'appendRow') {
           // If destinationRange doesn't start at first column, pad with empty values.
           var firstColumn = destinationRange.getColumn()
-          data.forEach(function (row)
-          {
+          data.forEach(function (row) {
             if (firstColumn > 1) row = (new Array(firstColumn - 1)).fill(null).concat(row)
             sheet.appendRow(row)
           })
-        } else
-        {
+        } else {
           destinationRange.setValues(data);
         }
       }
     }
   }
-  if (parameters.log !== false)
-  {
+  if (parameters.log !== false) {
     var plural = data.length > 1 ? 's' : ''
     console.log('Wrote ' + data.length + ' row' + plural + ' of data to range ' + destinationRange.getA1Notation() + ' on sheet: ' + sheet.getName())
   }
@@ -296,8 +256,7 @@ function setRowsData(sheet, objects, parameters)
 
 
 //Helper function that gets the headers range, optionally matching header values to determine start and end 
-function getHeadersRange(sheet, headersRowIndex, startHeader, endHeader)
-{
+function getHeadersRange(sheet, headersRowIndex, startHeader, endHeader) {
   var lastCol = sheet.getLastColumn();
   var headers = sheet.getRange(headersRowIndex, 1, 1, lastCol).getValues().shift();
   var columnBounds = getStartEndColumns(headers, startHeader, endHeader, lastCol)
@@ -307,8 +266,7 @@ function getHeadersRange(sheet, headersRowIndex, startHeader, endHeader)
 }
 
 //Helper function that gets the body range, optionally matching header values to determine start and end 
-function getBodyRange(sheet, headersRowIndex, startHeader, endHeader)
-{
+function getBodyRange(sheet, headersRowIndex, startHeader, endHeader) {
   var lastCol = sheet.getLastColumn();
   var headers = sheet.getRange(headersRowIndex, 1, 1, lastCol).getValues().shift();
   var columnBounds = getStartEndColumns(headers, startHeader, endHeader, lastCol)
@@ -318,31 +276,24 @@ function getBodyRange(sheet, headersRowIndex, startHeader, endHeader)
   return bodyRange;
 }
 
-function getStartEndColumns(headers, startHeader, endHeader, lastCol)
-{
+function getStartEndColumns(headers, startHeader, endHeader, lastCol) {
   if (!endHeader) var endCol = lastCol
-  if (endHeader)
-  {
+  if (endHeader) {
     var endCol = headers.indexOf(endHeader) + 1;
-    if (!endCol)
-    {
+    if (!endCol) {
       throw new Error('endHeader "' + endHeader + '" column not found');
     }
   }
   if (!startHeader) var startCol = 1;
-  if (startHeader)
-  {
+  if (startHeader) {
     var startCol = headers.indexOf(startHeader) + 1;
-    if (!startCol)
-    {
+    if (!startCol) {
       throw new Error('startHeader "' + startHeader + '" column not found');
     }
   }
-  if (endCol > startCol)
-  {
+  if (endCol > startCol) {
     return { startCol: startCol, endCol: endCol };
-  } else
-  {
+  } else {
     return { startCol: endCol, endCol: startCol };
   }
 }
@@ -354,24 +305,20 @@ function getStartEndColumns(headers, startHeader, endHeader, lastCol)
 // Arguments:
 //   - data: JavaScript 2d array
 //   - keys: Array of Strings that define the property names for the objects to create
-function getObjects_(data, keys, getBlanks, getMetadata, dataRangeStartRowIndex, base, formulas, options = {})
-{
+function getObjects_(data, keys, getBlanks, getMetadata, dataRangeStartRowIndex, base, formulas, options = {}) {
   var objects = [];
 
-  for (var i = 0; i < data.length; ++i)
-  {
+  for (var i = 0; i < data.length; ++i) {
     var object = getMetadata ? { arrayIndex: objects.length, sheetRow: i + dataRangeStartRowIndex } : {};
     if (base) object.shortcut = base + (i + dataRangeStartRowIndex);
     var hasData = false;
-    for (var j = 0; j < data[i].length; ++j)
-    {
+    for (var j = 0; j < data[i].length; ++j) {
       // Skip blank headers unless explicitly instructed
       if (!keys[j] && !options.getBlankHeaders) continue;
       var cellData = formulas ? (formulas[i][j] || data[i][j]) : data[i][j]
-      if (isCellEmpty_(cellData))
-      {
-        if (getBlanks)
-        {
+      if (options.trim && 'string' === typeof cellData) { cellData = cellData.trim() }
+      if (isCellEmpty_(cellData)) {
+        if (getBlanks) {
           object[keys[j]] = '';
           hasData = true;
         }
@@ -380,8 +327,7 @@ function getObjects_(data, keys, getBlanks, getMetadata, dataRangeStartRowIndex,
       object[keys[j]] = cellData;
       hasData = true;
     }
-    if (hasData)
-    {
+    if (hasData) {
       objects.push(object);
     }
   }
@@ -393,8 +339,7 @@ function getObjects_(data, keys, getBlanks, getMetadata, dataRangeStartRowIndex,
 // Empty Strings are returned for all Strings that could not be successfully normalized.
 // Arguments:
 //   - headers: Array of Strings to normalize
-function normalizeHeaders(headers)
-{
+function normalizeHeaders(headers) {
   return headers.map(normalizeHeader)
 }
 
@@ -407,32 +352,25 @@ function normalizeHeaders(headers)
 //   "First Name" -> "firstName"
 //   "Market Cap (millions) -> "marketCapMillions
 //   "1 number at the beginning is ignored" -> "numberAtTheBeginningIsIgnored"
-function normalizeHeader(header)
-{
+function normalizeHeader(header) {
   var key = "";
   var upperCase = false;
-  for (var i = 0; i < header.length; ++i)
-  {
+  for (var i = 0; i < header.length; ++i) {
     var letter = header[i];
-    if (letter == " " && key.length > 0)
-    {
+    if (letter == " " && key.length > 0) {
       upperCase = true;
       continue;
     }
-    if (!isAlnum_(letter))
-    {
+    if (!isAlnum_(letter)) {
       continue;
     }
-    if (key.length == 0 && isDigit_(letter))
-    {
+    if (key.length == 0 && isDigit_(letter)) {
       continue; // first character must be a letter
     }
-    if (upperCase)
-    {
+    if (upperCase) {
       upperCase = false;
       key += letter.toUpperCase();
-    } else
-    {
+    } else {
       key += letter.toLowerCase();
     }
   }
@@ -442,22 +380,19 @@ function normalizeHeader(header)
 // Returns true if the cell where cellData was read from is empty.
 // Arguments:
 //   - cellData: string
-function isCellEmpty_(cellData)
-{
+function isCellEmpty_(cellData) {
   return typeof (cellData) == "string" && cellData == "";
 }
 
 // Returns true if the character char is alphabetical, false otherwise.
-function isAlnum_(char)
-{
+function isAlnum_(char) {
   return char >= 'A' && char <= 'Z' ||
     char >= 'a' && char <= 'z' ||
     isDigit_(char);
 }
 
 // Returns true if the character char is a digit, false otherwise.
-function isDigit_(char)
-{
+function isDigit_(char) {
   return char >= '0' && char <= '9';
 }
 
@@ -467,8 +402,7 @@ function isDigit_(char)
 /** 
  * Set values in chunks by row, to avoid timeout.  Default to chunks of 1000 rows.
  */
-function setValuesChunked(sheet, values, destinationRange, parameters)
-{
+function setValuesChunked(sheet, values, destinationRange, parameters) {
   var chunkSize = parameters.chunkSize || 1000;
   console.log("Setting rows in chunks of size %s.", chunkSize)
   var startRow = destinationRange.getRow();
@@ -476,15 +410,12 @@ function setValuesChunked(sheet, values, destinationRange, parameters)
   var startColumn = destinationRange.getColumn();
   var rangeWidth = destinationRange.getWidth();
   var chunkStart = 0; // index in 'values' array, of starting row for this chunk.
-  while (chunkStart < values.length)
-  {
+  while (chunkStart < values.length) {
     var chunkEnd = Math.min(chunkStart + chunkSize, values.length); // chunkEnd is exclusive: we will chunk up to but not including this index.
     var chunkRange = sheet.getRange(startRow + chunkStart, startColumn, chunkEnd - chunkStart, rangeWidth);
-    try
-    {
+    try {
       setThisChunk()
-    } catch (err)
-    {
+    } catch (err) {
       console.error(err)
       console.log("Trying again...")
       SpreadsheetApp.flush();
@@ -500,10 +431,8 @@ function setValuesChunked(sheet, values, destinationRange, parameters)
   // Private functions
   // -----------------
 
-  function setThisChunk()
-  {
-    if (parameters.useSheetsAPI)
-    {
+  function setThisChunk() {
+    if (parameters.useSheetsAPI) {
       var rangeString = "'" + sheet.getName() + "'!" + chunkRange.getA1Notation();
       console.log("Sending Sheets API request to set chunk " + rangeString);
       var options = {
@@ -516,8 +445,7 @@ function setValuesChunked(sheet, values, destinationRange, parameters)
         "values": values.slice(chunkStart, chunkEnd)
       }
       Sheets.Spreadsheets.Values.update(valueRange, sheet.getParent().getId(), rangeString, options)
-    } else
-    {
+    } else {
       chunkRange.setValues(values.slice(chunkStart, chunkEnd))
     }
     console.log("Set values on chunk for " + chunkRange.getA1Notation())
@@ -531,8 +459,7 @@ function setValuesChunked(sheet, values, destinationRange, parameters)
  * Gets values in chunks by row, to avoid error "Requested data exceeds the maximum allowed size. Please get a smaller range of cells".
  Default to chunks of 5000 rows.
  */
-function getValuesChunked(sheet, dataRange, parameters)
-{
+function getValuesChunked(sheet, dataRange, parameters) {
   var chunkSize = parameters.chunkSize || 5000;
   if (parameters.log !== false) console.log("Getting rows in chunks of size %s from range %s.", chunkSize, dataRange.getA1Notation())
   var startRow = dataRange.getRow();
@@ -543,8 +470,7 @@ function getValuesChunked(sheet, dataRange, parameters)
   var values = [];
   var chunkStart = startRow;
 
-  while (chunkStart < numRows)
-  {
+  while (chunkStart < numRows) {
     var chunkEnd = Math.min(chunkStart + chunkSize, numRows + startRow); // 
     var chunkRange = sheet.getRange(chunkStart, startColumn, chunkEnd - chunkStart, numCols);
     if (parameters.log !== false) console.log('Getting values from chunkRange: ' + chunkRange.getA1Notation());
@@ -556,8 +482,7 @@ function getValuesChunked(sheet, dataRange, parameters)
   return values;
 }
 
-function appendRowsToSheet(spreadsheetId, sheetId, numRows)
-{
+function appendRowsToSheet(spreadsheetId, sheetId, numRows) {
   var request = {
     "appendDimension": {
       "sheetId": sheetId,
@@ -576,8 +501,7 @@ function appendRowsToSheet(spreadsheetId, sheetId, numRows)
  *                         .strict: Boolean -- whether to throw error if column not found
  * @returns {integer} The sheet column index, or 0 if not found.
  */
-function getHeaderColumn(sheet, header, options)
-{
+function getHeaderColumn(sheet, header, options) {
   options = options || {}
   var headersIndex = options.headersRowIndex || 1;
   var headers = sheet.getRange(headersIndex, 1, 1, sheet.getLastColumn()).getValues()[0];
