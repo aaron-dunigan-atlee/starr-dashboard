@@ -39,14 +39,38 @@
     // Run the function.  If successful, check whether we need to run another batch.
     function runBatch(args)
     {
+
       // Function should return null if we're done.
       if (args === null)
       {
-        closeDialog()
+
+        if ('<?=functionName?>' === "importSchool") {
+
+          google.script.run
+          .withSuccessHandler(closeDialog)
+          .withFailureHandler(onFailure)
+          .updateDashboardWithCoaches()
+
+        } else {
+
+          google.script.run
+          .withSuccessHandler(closeDialog)
+          .withFailureHandler(onFailure)
+          .sortDashboard()
+
+        }
+          
       } else
       {
         console.log("Running batch with args %s ", JSON.stringify(args))
-        $('#dialog-subtext').html('Importing data for ' + args.currentSchool + '.<br/>Processed ' + args.continuationToken + ' school(s) out of ' + args.schoolCount + '.')
+        $('#dialog-subtext').html(
+          'Importing data for ' +
+          (args.currentSchool ? args.currentSchool : "coaches") +
+          '.<br/>Processed '+ 
+          args.continuationToken + 
+          ` ${args.currentSchool ? "school(s)" : "coach spreadsheet(s)"} out of `
+          + (args.schoolCount ? args.schoolCount : args.spreadsheetCount) + '.'
+        )
         if (args.lastError)
         {
           $('#error').text(args.lastError)
