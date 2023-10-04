@@ -1,5 +1,11 @@
 
-function updateDashboardWithCoaches() {
+function updateDashboardWithCoaches()
+{
+  // For backward compatibility, we make this part optional
+  if (!COACHES_DIRECTORY_TABLE.sheet)
+  {
+    return;
+  }
 
   // Get a list of coaches SPREADSHEETS
   // These will link to spreadhseets containing coach data
@@ -7,7 +13,8 @@ function updateDashboardWithCoaches() {
 
   // Check of any coach spreadsheets were found
   const [firstCoachSpreadsheet] = coachesSpreadsheets;
-  if (!firstCoachSpreadsheet) {
+  if (!firstCoachSpreadsheet)
+  {
     throw new Error("There are no coach spreadsheets listed in the Coaches Directory.");
   }
 
@@ -30,7 +37,8 @@ function updateDashboardWithCoaches() {
 /**
  * This is called by the spinner modal to import data from one school
  */
-function importCoaches(continuationArgs) {
+function importCoaches(continuationArgs)
+{
   console.log("Importing coaches with continuationArgs: %s", JSON.stringify(continuationArgs))
 
   // Get two Coach Directory rows, so that we know the name of the next school to pass back (and also whether we are at the end)
@@ -44,15 +52,18 @@ function importCoaches(continuationArgs) {
 
   var lastError = null;
 
-  try {
+  try
+  {
     processCoachSpreadsheet(coachSpreadsheetRow)
-  } catch (err) {
+  } catch (err)
+  {
     notifyError(err, false, "Error updating dashboard for coaches " + JSON.stringify(coachSpreadsheetRow))
     lastError = "⚠️ There was an error importing data for " + coachSpreadsheetRow.description
   }
 
   // If there is a next school, return its name, otherwise we are done
-  if (coachSpreadsheetRows[1]) {
+  if (coachSpreadsheetRows[1])
+  {
     return {
       continuationToken: continuationArgs.continuationToken + 1,
       currentSpreadsheet: coachSpreadsheetRows[1].description,
@@ -60,12 +71,14 @@ function importCoaches(continuationArgs) {
       spreadsheetCount: continuationArgs.spreadsheetCount
     }
   }
-  else {
+  else
+  {
     return null
   }
 };
 
-function processCoachSpreadsheet(coachSpreadsheet) {
+function processCoachSpreadsheet(coachSpreadsheet)
+{
 
   var coachesTable = new SheetsTable({
     name: coachSpreadsheet.description,
@@ -86,7 +99,8 @@ function processCoachSpreadsheet(coachSpreadsheet) {
 
   // Filter for rows with relevant data
   var rawRows = coachesTable.getRows();
-  var coachesData = rawRows.filter(x => {
+  var coachesData = rawRows.filter(x =>
+  {
     return x.actionSteps && x.lastName !== '(Last Name)';
   })
 
@@ -95,18 +109,24 @@ function processCoachSpreadsheet(coachSpreadsheet) {
   // Form a nested array of each participant's sub rows
   // Participants are "practitioner" (teacher) or "leader"
   var participants = [];
-  if (coachesData.length > 0) {
+  if (coachesData.length > 0)
+  {
     var participant;
-    coachesData.forEach((row, rowIndex) => {
-      if (row[idHeader]) {
+    coachesData.forEach((row, rowIndex) =>
+    {
+      if (row[idHeader])
+      {
         if (participant) participants.push(new Object(participant))
         participant = [row]
       }
-      else {
-        try {
+      else
+      {
+        try
+        {
           participant.push(row);
         }
-        catch (e) {
+        catch (e)
+        {
           console.error("This is probably a poorly formatted spreadsheet. Here's what we know:\n%s",
             JSON.stringify({
               idHeader,
@@ -124,7 +144,8 @@ function processCoachSpreadsheet(coachSpreadsheet) {
   console.log("PARTICIPANTS", participants);
 
   // Build the data object
-  var coachRows = participants.map((participant, index) => {
+  var coachRows = participants.map((participant, index) =>
+  {
 
     // Note, the coach contains the first action step
     // actionSteps contains the rest of the actions steps for that
@@ -174,7 +195,8 @@ function processCoachSpreadsheet(coachSpreadsheet) {
 
     };
 
-    if (coachesData.length > 0) {
+    if (coachesData.length > 0)
+    {
       addCoachActionSteps(coachRow, participant);
       addCoachActionStepsCompletedPercentage(coachRow, participant);
     }
@@ -185,7 +207,8 @@ function processCoachSpreadsheet(coachSpreadsheet) {
 
   console.log("Coach rows are %s", JSON.stringify(coachRows))
 
-  if (coachRows.length > 0) {
+  if (coachRows.length > 0)
+  {
     DASHBOARD_TABLE.updateRows(coachRows, null, null,
       {
         'upsert': true,
@@ -195,11 +218,13 @@ function processCoachSpreadsheet(coachSpreadsheet) {
   }
 }
 
-function addCoachActionSteps(coachRow, participant) {
+function addCoachActionSteps(coachRow, participant)
+{
 
   const actionSteps = {};
 
-  participant.forEach((row) => {
+  participant.forEach((row) =>
+  {
     if (!actionSteps[row.statusOfActionSteps]) actionSteps[row.statusOfActionSteps] = 1;
     else actionSteps[row.statusOfActionSteps] += 1;
   });
@@ -210,16 +235,19 @@ function addCoachActionSteps(coachRow, participant) {
 
 }
 
-function addCoachActionStepsCompletedPercentage(coachRow, participant) {
+function addCoachActionStepsCompletedPercentage(coachRow, participant)
+{
 
-  coachRow.coachesPercentOfActionStepsCompleted = participant.reduce((acc, row) => {
+  coachRow.coachesPercentOfActionStepsCompleted = participant.reduce((acc, row) =>
+  {
     if (row.statusOfActionSteps === 'Completed') return acc + 1;
     return acc;
   }, 0) / participant.length;
 
 }
 
-function countCoachNotes(coachIndex, coachesTable) {
+function countCoachNotes(coachIndex, coachesTable)
+{
   const sheet = SpreadsheetApp.openByUrl(coachesTable.spreadsheetUrl).getSheets()[coachesTable.sheetIndex]
   let rows = sheet.getDataRange().getValues()
     // Remove the first row and use the second row as headers

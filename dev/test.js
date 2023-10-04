@@ -1,4 +1,8 @@
 
+function testSheet()
+{
+  console.log(COACHES_DIRECTORY_TABLE.sheet)
+}
 
 function testImportSchool()
 {
